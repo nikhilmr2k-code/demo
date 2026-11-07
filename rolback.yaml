@@ -1,0 +1,9 @@
+steps:
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - my-app
+      - --image=asia-south1-docker.pkg.dev/cloud-engine-513410/demo-project/springboot-app@sha256:427d09210ca2ee65ff110fbdca6f8d10e67fd60a022f7343f4ae1e964ffb4a30
+      - --region=us-central1
