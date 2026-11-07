@@ -1,0 +1,42 @@
+
+steps:
+  # 1. Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:${COMMIT_SHA}'
+      - '.'
+
+  # 2. Push image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:${COMMIT_SHA}'
+
+  # 3. Deploy image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE}'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:${COMMIT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--port=8080'
+      - '--service-account=springboot-runtime@${PROJECT_ID}.iam.gserviceaccount.com'
+      - '--allow-unauthenticated'
+      - '--quiet'
+
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_IMAGE}:${COMMIT_SHA}'
+
+substitutions:
+  _REGION: asia-south1
+  _REPOSITORY: demo-project
+  _IMAGE: springboot-app
+  _SERVICE: springboot-demo
+
+options:
+  logging: CLOUD_LOGGING_ONLY
